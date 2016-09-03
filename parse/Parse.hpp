@@ -14,6 +14,8 @@ class Term
 {
 public:
 
+    virtual ~Term() {}
+
     virtual void applyVisitor(TermVisitor&) const = 0;
 };
 
@@ -55,5 +57,7 @@ public:
 };
 
 } // tree
+
+std::unique_ptr<tree::Term> parseTerm(std::istream&);
 
 } // parse
