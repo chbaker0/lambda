@@ -35,7 +35,7 @@ public:
 
         bool isFirst = true;
 
-        for (int termNdx = 0; termNdx < term.terms.size(); ++termNdx)
+        for (unsigned int termNdx = 0; termNdx < term.terms.size(); ++termNdx)
         {
             if (!isFirst)
             {
