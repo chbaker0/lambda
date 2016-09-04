@@ -141,7 +141,9 @@ std::unique_ptr<tree::Term> parseTerm(std::istream& input)
 {
     std::unique_ptr<tree::Term> node = parseSubterm(input);
 
-    if (input.peek() != EOF)
+    skipWhitespace(input);
+
+    if (input.peek() != EOF && input.peek() != ')')
     {
         std::unique_ptr<tree::Term> tempNode = std::move(node);
         std::unique_ptr<tree::Application> appNode = std::unique_ptr<tree::Application>(new tree::Application);
@@ -150,7 +152,7 @@ std::unique_ptr<tree::Term> parseTerm(std::istream& input)
         do
         {
             appNode->terms.push_back(parseSubterm(input));
-        } while (input.peek () != EOF);
+        } while (input.peek () != EOF && input.peek() != ')');
 
         node = std::move(appNode);
     }
