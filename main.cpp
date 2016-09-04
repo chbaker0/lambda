@@ -1,5 +1,7 @@
 #include <iostream>
 #include <memory>
+#include <sstream>
+#include <string>
 #include <utility>
 
 #include "parse/Parse.hpp"
@@ -56,24 +58,17 @@ public:
 
 int main()
 {
-    std::unique_ptr<tree::Variable> vx(new tree::Variable), vy(new tree::Variable);
+    std::string input;
 
-    vx->name = "x";
-    vy->name = "y";
+    while (getline(std::cin, input) && input.size() > 0)
+    {
+        std::istringstream is(input);
 
-    std::unique_ptr<tree::Application> body(new tree::Application);
+        std::unique_ptr<tree::Term> tree = parseTerm(is);
 
-    body->terms.push_back(std::move(vx));
-    body->terms.push_back(std::move(vy));
+        TreePrinter treePrinter;
+        tree->applyVisitor(treePrinter);
 
-    std::unique_ptr<tree::Abstraction> abs(new tree::Abstraction);
-
-    abs->arguments.push_back("x");
-    abs->body = std::move(body);
-
-    TreePrinter treePrinter;
-
-    abs->applyVisitor(treePrinter);
-
-    cout << "\n";
+        cout << "\n";
+    }
 }
