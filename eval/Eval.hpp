@@ -4,6 +4,8 @@
 #include <memory>
 #include <string>
 
+#include "Parse.hpp"
+
 namespace eval
 {
 
@@ -69,6 +71,8 @@ public:
 };
 
 } // ast
+
+std::unique_ptr<ast::Term> convertParseTree(const parse::tree::Term&);
 
 } // eval
 
