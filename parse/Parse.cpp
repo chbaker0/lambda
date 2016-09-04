@@ -117,6 +117,20 @@ std::unique_ptr<tree::Term> parseTerm(std::istream& input)
 
         input.get();
     }
+    else
+    {
+        std::string name = parseIdentifier(input);
+
+        if (name.size() == 0)
+        {
+            throw std::runtime_error("Parse error");
+        }
+
+        std::unique_ptr<tree::Variable> var(new tree::Variable);
+        var->name = std::move(name);
+
+        node = std::move(var);
+    }
 
     skipWhitespace(input);
 
