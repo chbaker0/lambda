@@ -1,3 +1,6 @@
+#ifndef PARSE_HPP_INCLUDED
+#define PARSE_HPP_INCLUDED
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -61,3 +64,5 @@ public:
 std::unique_ptr<tree::Term> parseTerm(std::istream&);
 
 } // parse
+
+#endif // PARSE_HPP_INCLUDED
