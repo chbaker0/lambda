@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.1)
 project(lambda)
 
+include_directories(eval parse)
+
 add_subdirectory(parse)
 
 add_executable(main main.cpp)
