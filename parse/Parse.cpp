@@ -92,9 +92,7 @@ std::unique_ptr<tree::Abstraction> parseAbstraction(std::istream& input)
     return node;
 }
 
-} // anonymous
-
-std::unique_ptr<tree::Term> parseTerm(std::istream& input)
+std::unique_ptr<tree::Term> parseSubterm(std::istream& input)
 {
     std::unique_ptr<tree::Term> node;
 
@@ -106,6 +104,8 @@ std::unique_ptr<tree::Term> parseTerm(std::istream& input)
     }
     else if (input.peek() == '(')
     {
+        input.get();
+
         node = parseTerm(input);
 
         skipWhitespace(input);
@@ -132,7 +132,14 @@ std::unique_ptr<tree::Term> parseTerm(std::istream& input)
         node = std::move(var);
     }
 
-    skipWhitespace(input);
+    return node;
+}
+
+} // anonymous
+
+std::unique_ptr<tree::Term> parseTerm(std::istream& input)
+{
+    std::unique_ptr<tree::Term> node = parseSubterm(input);
 
     if (input.peek() != EOF)
     {
@@ -142,7 +149,7 @@ std::unique_ptr<tree::Term> parseTerm(std::istream& input)
 
         do
         {
-            appNode->terms.push_back(parseTerm(input));
+            appNode->terms.push_back(parseSubterm(input));
         } while (input.peek () != EOF);
 
         node = std::move(appNode);
