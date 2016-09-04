@@ -64,11 +64,18 @@ int main()
     {
         std::istringstream is(input);
 
-        std::unique_ptr<tree::Term> tree = parseTerm(is);
+        try
+        {
+            std::unique_ptr<tree::Term> tree = parseTerm(is);
 
-        TreePrinter treePrinter;
-        tree->applyVisitor(treePrinter);
+            TreePrinter treePrinter;
+            tree->applyVisitor(treePrinter);
 
-        cout << "\n";
+            cout << "\n";
+        }
+        catch (std::runtime_error& e)
+        {
+            cout << e.what() << "\n";
+        }
     }
 }
