@@ -46,14 +46,14 @@ public:
     virtual void acceptTerm(const tree::Abstraction& term) override
     {
         std::unique_ptr<ast::Abstraction> node(new ast::Abstraction);
-        node->argumentTag = term.arguments[0];
+        node->argumentName = term.arguments[0];
 
         ast::Abstraction *last = node.get();
 
         for (unsigned int argNdx = 1; argNdx < term.arguments.size(); ++argNdx)
         {
             std::unique_ptr<ast::Abstraction> current(new ast::Abstraction);
-            current->argumentTag = term.arguments[argNdx];
+            current->argumentName = term.arguments[argNdx];
 
             ast::Abstraction *temp = last;
 

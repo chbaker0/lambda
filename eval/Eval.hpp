@@ -27,7 +27,7 @@ class Abstraction : public Term
 {
 public:
 
-    std::string argumentTag;
+    std::string argumentName;
     std::unique_ptr<Term> body;
 
     virtual void applyVisitor(TermVisitor&) const override;
