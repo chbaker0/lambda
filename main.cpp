@@ -5,8 +5,10 @@
 #include <utility>
 
 #include "parse/Parse.hpp"
+#include "eval/Eval.hpp"
 
 using namespace parse;
+using namespace eval;
 using std::cout;
 
 class TreePrinter : public tree::TermVisitor
@@ -56,6 +58,37 @@ public:
     }
 };
 
+class ASTPrinter : public ast::TermVisitor
+{
+public:
+
+    virtual void acceptTerm(const ast::Abstraction& term) override
+    {
+        cout << "(^" << term.argumentName << ". ";
+        term.body->applyVisitor(*this);
+        cout << ")";
+    }
+
+    virtual void acceptTerm(const ast::Application& term) override
+    {
+        cout << "(";
+        term.left->applyVisitor(*this);
+        cout << " ";
+        term.right->applyVisitor(*this);
+        cout << ")";
+    }
+
+    virtual void acceptTerm(const ast::BoundVariable& term) override
+    {
+        cout << "_" << term.index;
+    }
+
+    virtual void acceptTerm(const ast::FreeVariable& term) override
+    {
+        cout << term.name;
+    }
+};
+
 int main()
 {
     std::string input;
@@ -72,6 +105,13 @@ int main()
             tree->applyVisitor(treePrinter);
 
             cout << "\n";
+
+            std::unique_ptr<ast::Term> ast = convertParseTree(*tree);
+
+            ASTPrinter astPrinter;
+            ast->applyVisitor(astPrinter);
+
+            cout << "\n\n";
         }
         catch (std::runtime_error& e)
         {
