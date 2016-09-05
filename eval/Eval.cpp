@@ -32,6 +32,36 @@ void FreeVariable::applyVisitor(TermVisitor& termVisitor) const
     termVisitor.acceptTerm(*this);
 }
 
+std::unique_ptr<Term> Abstraction::copy() const
+{
+    std::unique_ptr<Abstraction> result(new Abstraction);
+    result->argumentName = argumentName;
+    result->body = body->copy();
+    return result;
+}
+
+std::unique_ptr<Term> Application::copy() const
+{
+    std::unique_ptr<Application> result(new Application);
+    result->left = left->copy();
+    result->right = right->copy();
+    return result;
+}
+
+std::unique_ptr<Term> BoundVariable::copy() const
+{
+    std::unique_ptr<BoundVariable> result(new BoundVariable);
+    result->index = index;
+    return result;
+}
+
+std::unique_ptr<Term> FreeVariable::copy() const
+{
+    std::unique_ptr<FreeVariable> result(new FreeVariable);
+    result->name = name;
+    return result;
+}
+
 } // ast
 
 namespace

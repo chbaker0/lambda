@@ -21,6 +21,7 @@ public:
     virtual ~Term() {}
 
     virtual void applyVisitor(TermVisitor&) const = 0;
+    virtual std::unique_ptr<Term> copy() const = 0;
 };
 
 class Abstraction : public Term
@@ -31,6 +32,7 @@ public:
     std::unique_ptr<Term> body;
 
     virtual void applyVisitor(TermVisitor&) const override;
+    virtual std::unique_ptr<Term> copy() const override;
 };
 
 class Application : public Term
@@ -40,6 +42,7 @@ public:
     std::unique_ptr<Term> left, right;
 
     virtual void applyVisitor(TermVisitor&) const override;
+    virtual std::unique_ptr<Term> copy() const override;
 };
 
 class BoundVariable : public Term
@@ -49,6 +52,7 @@ public:
     unsigned int index;
 
     virtual void applyVisitor(TermVisitor&) const override;
+    virtual std::unique_ptr<Term> copy() const override;
 };
 
 class FreeVariable : public Term
@@ -58,6 +62,7 @@ public:
     std::string name;
 
     virtual void applyVisitor(TermVisitor&) const override;
+    virtual std::unique_ptr<Term> copy() const override;
 };
 
 class TermVisitor
