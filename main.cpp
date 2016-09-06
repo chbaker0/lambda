@@ -104,14 +104,28 @@ int main()
             TreePrinter treePrinter;
             tree->applyVisitor(treePrinter);
 
-            cout << "\n";
+            cout << "\n\n";
 
             std::unique_ptr<ast::Term> ast = convertParseTree(*tree);
 
-            ASTPrinter astPrinter;
-            ast->applyVisitor(astPrinter);
+            bool isDone = false;
+            while (!isDone)
+            {
+                ASTPrinter astPrinter;
+                ast->applyVisitor(astPrinter);
 
-            cout << "\n\n";
+                cout << "\n\n";
+
+                std::unique_ptr<ast::Term> reduced = betaReduce(*ast);
+                if (reduced)
+                {
+                    ast = std::move(reduced);
+                }
+                else
+                {
+                    isDone = true;
+                }
+            }
         }
         catch (std::runtime_error& e)
         {
