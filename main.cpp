@@ -5,8 +5,10 @@
 #include <utility>
 
 #include "parse/Parse.hpp"
+#include "eval/Eval.hpp"
 
 using namespace parse;
+using namespace eval;
 using std::cout;
 
 class TreePrinter : public tree::TermVisitor
@@ -56,6 +58,37 @@ public:
     }
 };
 
+class ASTPrinter : public ast::TermVisitor
+{
+public:
+
+    virtual void acceptTerm(const ast::Abstraction& term) override
+    {
+        cout << "(^" << term.argumentName << ". ";
+        term.body->applyVisitor(*this);
+        cout << ")";
+    }
+
+    virtual void acceptTerm(const ast::Application& term) override
+    {
+        cout << "(";
+        term.left->applyVisitor(*this);
+        cout << " ";
+        term.right->applyVisitor(*this);
+        cout << ")";
+    }
+
+    virtual void acceptTerm(const ast::BoundVariable& term) override
+    {
+        cout << "_" << term.index;
+    }
+
+    virtual void acceptTerm(const ast::FreeVariable& term) override
+    {
+        cout << term.name;
+    }
+};
+
 int main()
 {
     std::string input;
@@ -71,7 +104,28 @@ int main()
             TreePrinter treePrinter;
             tree->applyVisitor(treePrinter);
 
-            cout << "\n";
+            cout << "\n\n";
+
+            std::unique_ptr<ast::Term> ast = convertParseTree(*tree);
+
+            bool isDone = false;
+            while (!isDone)
+            {
+                ASTPrinter astPrinter;
+                ast->applyVisitor(astPrinter);
+
+                cout << "\n\n";
+
+                std::unique_ptr<ast::Term> reduced = betaReduce(*ast);
+                if (reduced)
+                {
+                    ast = std::move(reduced);
+                }
+                else
+                {
+                    isDone = true;
+                }
+            }
         }
         catch (std::runtime_error& e)
         {
