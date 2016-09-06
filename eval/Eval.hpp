@@ -78,6 +78,7 @@ public:
 } // ast
 
 std::unique_ptr<ast::Term> convertParseTree(const parse::tree::Term&);
+std::unique_ptr<ast::Term> betaReduce(const ast::Term&);
 
 } // eval
 

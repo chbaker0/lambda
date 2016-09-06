@@ -230,6 +230,166 @@ public:
     std::unique_ptr<ast::Term> result;
 };
 
+class BoundVariableReplacer : public ast::TermVisitor
+{
+public:
+
+    BoundVariableReplacer(unsigned int boundIndex_in, const ast::Term *prototype_in)
+        : boundIndex(boundIndex_in), prototype(prototype_in) {}
+
+    virtual void acceptTerm(const ast::Abstraction& term) override
+    {
+        BoundVariableReplacer bodyReplacer(boundIndex + 1, prototype);
+        term.body->applyVisitor(bodyReplacer);
+
+        std::unique_ptr<ast::Abstraction> replacedTerm(new ast::Abstraction);
+        replacedTerm->argumentName = term.argumentName;
+        replacedTerm->body = std::move(bodyReplacer.result);
+
+        result = std::move(replacedTerm);
+    }
+
+    virtual void acceptTerm(const ast::Application& term) override
+    {
+        std::unique_ptr<ast::Application> replacedTerm(new ast::Application);
+
+        BoundVariableReplacer subtermReplacer(boundIndex, prototype);
+        term.left->applyVisitor(subtermReplacer);
+        replacedTerm->left = std::move(subtermReplacer.result);
+        term.right->applyVisitor(subtermReplacer);
+        replacedTerm->right = std::move(subtermReplacer.result);
+
+        result = std::move(replacedTerm);
+    }
+
+    virtual void acceptTerm(const ast::BoundVariable& term) override
+    {
+        if (term.index == boundIndex)
+        {
+            result = prototype->copy();
+        }
+        else
+        {
+            result = term.copy();
+        }
+    }
+
+    virtual void acceptTerm(const ast::FreeVariable& term) override
+    {
+        result = term.copy();
+    }
+
+    unsigned int boundIndex;
+    const ast::Term *prototype;
+
+    std::unique_ptr<ast::Term> result;
+};
+
+class BetaReducer : public ast::TermVisitor
+{
+private:
+
+    enum TermType
+    {
+        Abstraction,
+        Application,
+        FreeVariable,
+        BoundVariable,
+        Invalid
+    };
+
+    class TermIdentifier : public ast::TermVisitor
+    {
+    public:
+
+        TermIdentifier() : result(Invalid) {}
+
+        virtual void acceptTerm(const ast::Abstraction&) override
+        {
+            result = Abstraction;
+        }
+
+        virtual void acceptTerm(const ast::Application&) override
+        {
+            result = Application;
+        }
+
+        virtual void acceptTerm(const ast::FreeVariable&) override
+        {
+            result = FreeVariable;
+        }
+
+        virtual void acceptTerm(const ast::BoundVariable&) override
+        {
+            result = BoundVariable;
+        }
+
+        TermType result;
+    };
+
+public:
+
+    BetaReducer() : reduced(false) {}
+
+    virtual void acceptTerm(const ast::Application& term) override
+    {
+        TermIdentifier identifier;
+        term.left->applyVisitor(identifier);
+
+        TermType lhsIdent = identifier.result;
+        if (lhsIdent == Abstraction)
+        {
+            BoundVariableReplacer replacer(1, term.right.get());
+            static_cast<const ast::Abstraction*>(term.left.get())->body->applyVisitor(replacer);
+            result = std::move(replacer.result);
+            reduced = true;
+        }
+        else
+        {
+            std::unique_ptr<ast::Application> reducedTerm(new ast::Application);
+
+            BetaReducer subtermReducer;
+            term.left->applyVisitor(subtermReducer);
+            reducedTerm->left = std::move(subtermReducer.result);
+            reduced = reduced || subtermReducer.reduced;
+
+            term.right->applyVisitor(subtermReducer);
+            reducedTerm->right = std::move(subtermReducer.result);
+            reduced = reduced || subtermReducer.reduced;
+
+            result = std::move(reducedTerm);
+        }
+    }
+
+    virtual void acceptTerm(const ast::Abstraction& term) override
+    {
+        BetaReducer bodyReducer;
+        term.body->applyVisitor(bodyReducer);
+        reduced = bodyReducer.reduced;
+
+        std::unique_ptr<ast::Abstraction> reducedTerm(new ast::Abstraction);
+        reducedTerm->argumentName = term.argumentName;
+        reducedTerm->body = std::move(bodyReducer.result);
+
+        result = std::move(reducedTerm);
+    }
+
+    virtual void acceptTerm(const ast::BoundVariable& term) override
+    {
+        reduced = false;
+        result = term.copy();
+    }
+
+    virtual void acceptTerm(const ast::FreeVariable& term) override
+    {
+        reduced = false;
+        result = term.copy();
+    }
+
+    bool reduced;
+    std::unique_ptr<ast::Term> result;
+};
+
 } // anonymous
 
 std::unique_ptr<ast::Term> convertParseTree(const parse::tree::Term& parseTree)
@@ -244,6 +404,21 @@ std::unique_ptr<ast::Term> convertParseTree(const parse::tree::Term& parseTree)
     unresolvedTree->applyVisitor(nameResolver);
 
     return std::move(nameResolver.result);
+}
+
+std::unique_ptr<ast::Term> betaReduce(const ast::Term& tree)
+{
+    BetaReducer betaReducer;
+    tree.applyVisitor(betaReducer);
+
+    if (betaReducer.reduced)
+    {
+        return std::move(betaReducer.result);
+    }
+    else
+    {
+        return std::unique_ptr<ast::Term>();
+    }
 }
 
 } // eval
