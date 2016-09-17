@@ -17,7 +17,7 @@ Lambda requires nothing more than a C++11 compiler and standard library. Use CMa
 
 After building, you should have an executable called `repl`. Run this; if you want line history, run under `rlwrap`.
 
-The syntax used is pretty much exactly the same as standard lambda calculus, except that abstraction is represented with '^' instead of 'λ'. You may omit parentheses and use shorthand for abstractions of several variables (i.e. you can write `^x y. t` instead of '^x. ^y. t`).
+The syntax used is pretty much exactly the same as standard lambda calculus, except that abstraction is represented with '^' instead of 'λ'. You may omit parentheses and use shorthand for abstractions of several variables (i.e. you can write `^x y. t` instead of `^x. ^y. t`).
 
 Since the evaluation engine uses normal reduction order, it should always terminate if a normal form for an input exists. However, it doesn't make any attempt to detect infinite loops. If you type `(^x. x x) (^x. x x)` it'll just repeatedly apply the same beta reduction until you kill the process.
 
