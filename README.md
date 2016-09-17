@@ -21,6 +21,56 @@ The syntax used is pretty much exactly the same as standard lambda calculus, exc
 
 Since the evaluation engine uses normal reduction order, it should always terminate if a normal form for an input exists. However, it doesn't make any attempt to detect infinite loops. If you type `(^x. x x) (^x. x x)` it'll just repeatedly apply the same beta reduction until you kill the process.
 
+Here is a quick usage sample:
+
+    >> (^x y. y x) a b
+    ((^x y . (y x)) a b)
+
+    (((^x. (^y. (_1 _2))) a) b)
+
+    ((^y. (_1 a)) b)
+
+    (b a)
+
+    >> (^p. p (^a b. b)) ((^a b p. p a b) x y)
+    ((^p . (p (^a b . b))) ((^a b p . (p a b)) x y))
+
+    ((^p. (_1 (^a. (^b. _1)))) (((^a. (^b. (^p. ((_1 _3) _2)))) x) y))
+
+    ((((^a. (^b. (^p. ((_1 _3) _2)))) x) y) (^a. (^b. _1)))
+
+    (((^b. (^p. ((_1 x) _2))) y) (^a. (^b. _1)))
+
+    ((^p. ((_1 x) y)) (^a. (^b. _1)))
+
+    (((^a. (^b. _1)) x) y)
+
+    ((^b. _1) y)
+
+    y
+
+    >> (^n f z. f (n f z)) (^f z. f(f(z)))
+    ((^n f z . (f (n f z))) (^f z . (f (f z))))
+
+    ((^n. (^f. (^z. (_2 ((_3 _2) _1))))) (^f. (^z. (_2 (_2 _1)))))
+
+    (^f. (^z. (_2 (((^f. (^z. (_2 (_2 _1)))) _2) _1))))
+
+    (^f. (^z. (_2 ((^z. (_2 (_2 _1))) _1))))
+
+    (^f. (^z. (_2 (_2 (_2 _1)))))
+
+    >> (^x y. x) (^x. x) ((^x. x x) (^x. x x))
+    ((^x y . x) (^x . x) ((^x . (x x)) (^x . (x x))))
+
+    (((^x. (^y. _2)) (^x. _1)) ((^x. (_1 _1)) (^x. (_1 _1))))
+
+    ((^y. (^x. _1)) ((^x. (_1 _1)) (^x. (_1 _1))))
+
+    (^x. _1)
+
+Note the `_1`, `_2`, etc; internally, the evaluation engine uses [De Bruijn indices](https://en.wikipedia.org/wiki/De_Bruijn_index) to avoid doing alpha conversions. For example, `(^x. ^y. x)` = `(^x. ^y. _2)` and `(^x. ^y. y)` = `(^x. ^y. _1)`.
+
 ## Future steps
 
 I have some features in mind for improving Lambda:
