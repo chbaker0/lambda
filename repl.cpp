@@ -93,6 +93,8 @@ int main()
 {
     std::string input;
 
+    cout << ">> ";
+
     while (getline(std::cin, input) && input.size() > 0)
     {
         std::istringstream is(input);
@@ -131,5 +133,7 @@ int main()
         {
             cout << e.what() << "\n";
         }
+
+        cout << ">> ";
     }
 }
